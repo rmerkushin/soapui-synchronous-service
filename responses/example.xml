@@ -1,0 +1,8 @@
+<soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:examples:helloservice">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <urn:sayHelloResponse soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+         <greeting xsi:type="xsd:string">Hello, comrade!</greeting>
+      </urn:sayHelloResponse>
+   </soapenv:Body>
+</soapenv:Envelope>

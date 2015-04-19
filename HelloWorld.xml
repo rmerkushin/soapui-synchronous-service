@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<con:soapui-project id="bb229a55-342c-456d-b1cc-3939bbef65b8" activeEnvironment="Default" name="HelloWorld" resourceRoot="" soapui-version="5.1.3" abortOnError="false" runType="SEQUENTIAL" xmlns:con="http://eviware.com/soapui/config"><con:settings/><con:interface xsi:type="con:WsdlInterface" id="2d653245-ff18-4f84-b6e6-5412228e1144" wsaVersion="NONE" name="Hello_Binding" type="wsdl" bindingName="{http://www.examples.com/wsdl/HelloService.wsdl}Hello_Binding" soapVersion="1_1" anonymous="optional" definition="file:/Users/rmerkushin/Documents/example.wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart="file:/Users/rmerkushin/Documents/example.wsdl"><con:part><con:url>file:/Users/rmerkushin/Documents/example.wsdl</con:url><con:content><![CDATA[<definitions name="HelloService" targetNamespace="http://www.examples.com/wsdl/HelloService.wsdl" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://www.examples.com/wsdl/HelloService.wsdl" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <message name="SayHelloRequest">
+    <part name="firstName" type="xsd:string"/>
+  </message>
+  <message name="SayHelloResponse">
+    <part name="greeting" type="xsd:string"/>
+  </message>
+  <portType name="Hello_PortType">
+    <operation name="sayHello">
+      <input message="tns:SayHelloRequest"/>
+      <output message="tns:SayHelloResponse"/>
+    </operation>
+  </portType>
+  <binding name="Hello_Binding" type="tns:Hello_PortType">
+    <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="sayHello">
+      <soap:operation soapAction="sayHello"/>
+      <input>
+        <soap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:examples:helloservice" use="encoded"/>
+      </input>
+      <output>
+        <soap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:examples:helloservice" use="encoded"/>
+      </output>
+    </operation>
+  </binding>
+  <service name="Hello_Service">
+    <documentation>WSDL File for HelloService</documentation>
+    <port binding="tns:Hello_Binding" name="Hello_Port">
+      <soap:address location="http://www.examples.com/SayHello/"/>
+    </port>
+  </service>
+</definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://www.examples.com/SayHello/</con:endpoint></con:endpoints><con:operation id="6fd5d233-7648-4ed6-83f0-577fc109e459" isOneWay="false" action="sayHello" name="sayHello" bindingOperationName="sayHello" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="cd957bd1-a2bd-47b9-914d-281984336659" name="Request 1"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8080/</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:examples:helloservice">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <urn:sayHello soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+         <firstName xsi:type="xsd:string">Роман</firstName>
+      </urn:sayHello>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig mustUnderstand="NONE" version="200508" action="sayHello"/><con:wsrmConfig version="1.2"/></con:call></con:operation></con:interface><con:mockService id="5551b06a-39db-4e06-849c-f9cfba8c6002" port="8080" path="/" host="localhost" name="HelloWorldService" bindToHostOnly="false" docroot=""><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.mock.WsdlMockService@require-soap-action">false</con:setting></con:settings><con:properties/><con:mockOperation name="sayHello" id="17d49efc-ad00-4edf-a52c-cfd127dac910" interface="Hello_Binding" operation="sayHello"><con:settings/><con:defaultResponse>successful</con:defaultResponse><con:dispatchStyle>SCRIPT</con:dispatchStyle><con:dispatchPath>import org.ini4j.Ini;
+import com.eviware.soapui.support.GroovyUtils;
+
+// Создаем экземпляр класса GroovyUtils
+def groovyUtils = new GroovyUtils(context);
+// Получаем путь до директории с проектом
+def projectDir = groovyUtils.projectPath;
+// Загружаем конфигурационный файл
+def conf = new Ini(new File(projectDir, "/settings.conf"));
+
+// Получаем сообщение и значение элемента firstName из входящего запроса по xpath
+def requestHolder = groovyUtils.getXmlHolder(mockRequest.requestContent);
+def requestMessage = requestHolder.getPrettyXml();
+def firstName = requestHolder.getNodeValue("//firstName");
+
+// Сохраняем запрос в директорию requests рядом с нашим проектом (директория должна существовать!)
+def request = new File(projectDir, "/requests/sayHello_${firstName}.xml");
+request.write(requestMessage, 'UTF-8');
+
+// Сохраняем запрос в лог global-groovy.log
+log.info("Received sayHello request: \n${requestMessage}");
+
+// Задержка перед ответом
+def timeout = conf.get("Response", "timeout");
+Thread.sleep(Integer.valueOf(timeout) * 1000);
+log.info("Wait ${timeout} second(s) before sending response");
+
+// Выбор варианта ответа
+def response = conf.get("Response", "type");
+return response;</con:dispatchPath><con:response name="successful" id="9c3f54da-9797-4ab4-9a19-faef88f2ddd6" httpResponseStatus="200" encoding="UTF-8"><con:settings/><con:script>import org.ini4j.Ini;
+import com.eviware.soapui.support.GroovyUtils;
+
+// Создаем экземпляр класса GroovyUtils
+def groovyUtils = new GroovyUtils(context);
+// Получаем путь до директории с проектом
+def projectDir = groovyUtils.projectPath;
+// Загружаем конфигурационный файл
+def conf = new Ini(new File(projectDir, "/settings.conf"));
+
+// Получаем значение элемента firstName из входящего запроса по xpath
+def requestHolder = groovyUtils.getXmlHolder(mockRequest.requestContent);
+def firstName = requestHolder.getNodeValue("//firstName");
+
+// Устанавливаем значение переменной greeting
+def helloText = conf.get("Response", "greeting");
+def greeting = "${helloText}, ${firstName}!";
+requestContext.greeting = greeting;
+
+// Сохраняем ответ в лог global-groovy.log
+def message = mockResponse.responseContent.replace('${greeting}', greeting);
+log.info("Sended sayHello response: \n${message}");</con:script><con:responseContent><![CDATA[<soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:examples:helloservice">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <urn:sayHelloResponse soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+         <greeting xsi:type="xsd:string">${greeting}</greeting>
+      </urn:sayHelloResponse>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:responseContent><con:wsaConfig mustUnderstand="NONE" version="200508" action="sayHello"/></con:response><con:response name="fault" id="2799b953-4c73-41be-a88a-2ed4e4a7b0b7" httpResponseStatus="500" encoding="UTF-8"><con:settings/><con:script>// Сохраняем ответ в лог global-groovy.log
+log.info("Sended sayHello response: \n" + mockResponse.responseContent);</con:script><con:responseContent><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+   <soapenv:Body>
+      <soapenv:Fault>
+         <faultcode>SOAP-ENV:Client</faultcode>
+         <faultstring xml:lang="EN">There was an error in the incoming SOAP request packet:  Client, InvalidXml</faultstring>
+         <faultactor>http://example.org/HelloWorldService</faultactor>
+      </soapenv:Fault>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:responseContent><con:wsaConfig mustUnderstand="NONE" version="200508" action="sayHello"/></con:response><con:response name="custom" id="fe4f06d0-fc7e-4be9-8c17-24031c927e7d" httpResponseStatus="200" encoding="UTF-8"><con:settings/><con:script>import org.ini4j.Ini;
+import com.eviware.soapui.support.GroovyUtils;
+
+// Создаем экземпляр класса GroovyUtils
+def groovyUtils = new GroovyUtils(context);
+// Получаем путь до директории с проектом
+def projectDir = groovyUtils.projectPath;
+// Загружаем конфигурационный файл
+def conf = new Ini(new File(projectDir, "/settings.conf"));
+
+// Загружаем ответ из файла
+def responseFile = conf.get("Response", "custom");
+def xmlString = new File(projectDir, "/responses/${responseFile}.xml").getText("UTF-8");
+def responseHolder = groovyUtils.getXmlHolder(xmlString);
+def message = responseHolder.getPrettyXml();
+
+// Устанавливаем значение переменной message
+requestContext.message = message;
+
+// Сохраняем ответ в лог global-groovy.log
+log.info("Sended sayHello response: \n${message}");</con:script><con:responseContent>${message}</con:responseContent><con:wsaConfig mustUnderstand="NONE" version="200508" action="sayHello"/></con:response><con:dispatchConfig/></con:mockOperation></con:mockService><con:properties/><con:wssContainer/><con:oAuth2ProfileContainer/></con:soapui-project>
